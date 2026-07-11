@@ -13,7 +13,7 @@ A single-file, dependency-free home loan offset account calculator. Enter your l
 - Interest saved and loan term reduction vs. a no-offset baseline
 - Loan balance chart comparing both scenarios
 - Compare mode: side-by-side comparison of two property prices (costs, repayments, offset trajectory and payoff time) with everything else held constant
-- Inflation mode: salary grows annually at a configurable rate, with the monthly surplus into the offset recalculated each year (expenses and repayment stay constant)
+- Inflation mode: salary and expenses each grow annually at their own configurable rates, with the monthly surplus into the offset recalculated each year (repayment stays constant)
 - English / 中文 language toggle
 
 ## Usage

@@ -276,6 +276,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     nextId: 4,
     inflationOn: false,
     wageGrowth: 3,
+    expenseGrowth: 3,
     startMonths: 0,
     lumpOn: false,
     horizonYears: 5,
@@ -312,7 +313,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       existingCash: 'Existing cash', existingCash2: 'Existing cash',
       minusDeposit: '− Deposit', minusStamp: '− Stamp duty (VIC)', minusTransfer: '− Transfer & reg. fees (est.)',
       cashShortWarn: 'Your cash doesn\'t cover the deposit and upfront costs — offset starts at $0.',
-      inflationAdd: '⊕ Inflation mode: grow my salary each year', wageGrowthLbl: 'Salary growth',
+      inflationAdd: '⊕ Inflation mode: grow salary & expenses each year', inflationLbl: 'Inflation mode',
+      wageGrowthLbl: 'Salary growth', expenseGrowthLbl: 'Expenses growth',
       wageUnit: '% /yr', year1: ' (year 1)',
       compareAdd: '⊕ Compare another property price', priceB: 'Estimated property price B',
       cmpDeposit: 'Deposit', cmpStamp: 'Stamp duty (VIC)', cmpFees: 'Transfer & reg. fees (est.)',
@@ -336,7 +338,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       interestSave: 'Total interest you could save', termReduce: 'Your loan term could reduce by',
       withoutOffset: 'Without offset', withOffset: 'With offset (surplus deposited monthly)',
       loanAmountAxis: 'Loan amount ($)', yearsAxis: 'Years',
-      footnote: 'Assumes principal & interest repayments at a constant rate, monthly surplus deposited into the offset from the start date, and interest charged only on the loan balance not covered by your offset (interest stops once the offset fully covers the loan). Stamp duty uses VIC general rates with no first-home-buyer or other concessions; transfer and mortgage registration fees are approximations. In inflation mode your salary grows once a year at the set rate and the monthly surplus is recalculated each year, while expenses and the repayment stay constant. Estimates only — not financial advice.',
+      footnote: 'Assumes principal & interest repayments at a constant rate, monthly surplus deposited into the offset from the start date, and interest charged only on the loan balance not covered by your offset (interest stops once the offset fully covers the loan). Stamp duty uses VIC general rates with no first-home-buyer or other concessions; transfer and mortgage registration fees are approximations. In inflation mode your salary and expenses each grow once a year at their set rates and the monthly surplus is recalculated each year, while the repayment stays constant. Estimates only — not financial advice.',
       perMo: ' /mo',
       interestCompare: function (a, b) { return a + ' interest instead of ' + b; },
       payoffCompare: function (a, b) { return 'Paid off in ' + a + ' instead of ' + b; }
@@ -349,7 +351,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       existingCash: '现有现金', existingCash2: '现有现金',
       minusDeposit: '− 首付', minusStamp: '− 印花税（VIC）', minusTransfer: '− 过户及登记费（估）',
       cashShortWarn: '现金不足以支付首付和购房前期成本 — 对冲账户初始余额为 $0。',
-      inflationAdd: '⊕ 通胀模式：工资每年增长', wageGrowthLbl: '工资年增长率',
+      inflationAdd: '⊕ 通胀模式：工资和开销每年增长', inflationLbl: '通胀模式',
+      wageGrowthLbl: '工资年增长率', expenseGrowthLbl: '开销年增长率',
       wageUnit: '% /年', year1: '（首年）',
       compareAdd: '⊕ 对比另一个房价', priceB: '预估房价 B',
       cmpDeposit: '首付', cmpStamp: '印花税（VIC）', cmpFees: '过户及登记费（估）',
@@ -373,7 +376,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       interestSave: '可节省的总利息', termReduce: '贷款年限可缩短',
       withoutOffset: '无对冲账户', withOffset: '有对冲账户（每月存入结余）',
       loanAmountAxis: '贷款余额（$）', yearsAxis: '年',
-      footnote: '假设按固定利率本息还款，月结余自开始日期起每月存入对冲账户；利息仅按未被对冲覆盖的贷款余额计算（对冲全额覆盖后不再产生利息）。印花税按维州（VIC）一般费率估算，不含首次置业等减免；过户及贷款登记费为近似值。通胀模式下工资每年按设定增长率上调一次、月结余逐年重算，开销和月供保持不变。结果仅为估算，不构成理财建议。',
+      footnote: '假设按固定利率本息还款，月结余自开始日期起每月存入对冲账户；利息仅按未被对冲覆盖的贷款余额计算（对冲全额覆盖后不再产生利息）。印花税按维州（VIC）一般费率估算，不含首次置业等减免；过户及贷款登记费为近似值。通胀模式下工资和开销每年各按设定增长率上调一次、月结余逐年重算，月供保持不变。结果仅为估算，不构成理财建议。',
       perMo: ' /月',
       interestCompare: function (a, b) { return '利息 ' + a + '（原本 ' + b + '）'; },
       payoffCompare: function (a, b) { return a + ' 还清（原需 ' + b + '）'; }
@@ -460,10 +463,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       var rawSurplus = s.income - totalExpenses - pay;
       var deposit = Math.max(0, rawSurplus);
       var g = s.inflationOn ? Math.max(0, s.wageGrowth) / 100 : 0;
+      var ge = s.inflationOn ? Math.max(0, s.expenseGrowth) / 100 : 0;
       var depositFn = function (m) {
-        if (!g) return deposit;
-        var income = s.income * Math.pow(1 + g, Math.floor((m - 1) / 12));
-        return Math.max(0, income - totalExpenses - pay);
+        if (!g && !ge) return deposit;
+        var yr = Math.floor((m - 1) / 12);
+        var income = s.income * Math.pow(1 + g, yr);
+        var exp = totalExpenses * Math.pow(1 + ge, yr);
+        return Math.max(0, income - exp - pay);
       };
       var zeroFn = function () { return 0; };
       var base = simulate(false, P, r, n, pay, zeroFn, 0, 0, 0, horizonM);
@@ -645,15 +651,24 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
     // Inflation mode section
     if (state.inflationOn) {
+      var growthInput = function (model, label, val) {
+        return '<div style="flex:1;min-width:0">' +
+          '<label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px">' + escapeHtml(label) + '</label>' +
+          '<div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px">' +
+            '<input type="number" step="0.5" min="0" max="20" data-model="' + model + '" value="' + val + '" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:\'Space Grotesk\',sans-serif;font-size:16px;font-weight:600;padding:12px 4px 12px 14px">' +
+            '<span style="padding:0 12px 0 0;color:#a08d78;font-size:13px;font-weight:600">' + escapeHtml(L.wageUnit) + '</span>' +
+          '</div>' +
+        '</div>';
+      };
       el('inflationSection').innerHTML =
         '<div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-            '<label style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78">' + escapeHtml(L.wageGrowthLbl) + '</label>' +
+            '<label style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78">' + escapeHtml(L.inflationLbl) + '</label>' +
             '<button data-action="toggleInflation" class="btn-remove-lump" style="border:none;background:transparent;color:#6f6151;font-size:12px;font-weight:700;cursor:pointer;padding:0">' + escapeHtml(L.remove) + '</button>' +
           '</div>' +
-          '<div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px;width:130px">' +
-            '<input type="number" step="0.5" min="0" max="20" data-model="wageGrowth" value="' + state.wageGrowth + '" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:\'Space Grotesk\',sans-serif;font-size:16px;font-weight:600;padding:12px 4px 12px 14px">' +
-            '<span style="padding:0 12px 0 0;color:#a08d78;font-size:13px;font-weight:600">' + escapeHtml(L.wageUnit) + '</span>' +
+          '<div style="display:flex;gap:10px">' +
+            growthInput('wageGrowth', L.wageGrowthLbl, state.wageGrowth) +
+            growthInput('expenseGrowth', L.expenseGrowthLbl, state.expenseGrowth) +
           '</div>' +
         '</div>';
     } else {
@@ -730,6 +745,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     rate: function (v) { state.rate = num(v); },
     income: function (v) { state.income = num(v); },
     wageGrowth: function (v) { state.wageGrowth = Math.max(0, Math.min(20, num(v))); },
+    expenseGrowth: function (v) { state.expenseGrowth = Math.max(0, Math.min(20, num(v))); },
     lump: function (v) { state.lump = num(v); },
     loanType: function (v) { state.loanType = v; },
     years: function (v) { state.years = parseInt(v, 10); },
