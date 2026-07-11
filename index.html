@@ -56,6 +56,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
           <input type="range" id="priceRange" min="100000" max="3000000" step="10000" data-model="propertyPrice" style="width:100%;margin-top:14px;accent-color:#f5a860;cursor:pointer">
         </div>
 
+        <div id="compareSection"></div>
+
         <div>
           <label data-bind="t.depositLbl" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
           <div style="display:flex;align-items:center;gap:10px">
@@ -189,7 +191,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
         <!-- Results -->
         <div style="background:#1f1813;border:1px solid #362a1f;border-radius:16px;padding:28px">
-          <div style="display:flex;gap:44px;flex-wrap:wrap;margin-bottom:26px">
+          <div id="statsRow" style="display:flex;gap:44px;flex-wrap:wrap;margin-bottom:26px">
             <div style="border-left:3px solid #f5a860;padding-left:18px">
               <div data-bind="t.interestSave" style="font-size:13px;color:#ab9885;font-weight:600;margin-bottom:4px"></div>
               <div data-bind="savedText" style="font-family:'Space Grotesk',sans-serif;font-size:46px;font-weight:700;color:#ffffff;line-height:1.05"></div>
@@ -202,10 +204,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
             </div>
           </div>
 
-          <div style="display:flex;gap:18px;font-size:12px;font-weight:600;color:#cbb8a4;margin-bottom:14px">
-            <span id="legendBaseline" style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:3px;background:#6b5d4c"></span><span data-bind="t.withoutOffset"></span></span>
-            <span style="display:flex;align-items:center;gap:7px"><span id="legendAccentSwatch" style="width:10px;height:10px;border-radius:3px;background:#f5a860"></span><span data-bind="t.withOffset"></span></span>
-          </div>
+          <div id="compareTable"></div>
+
+          <div id="legendRow" style="display:flex;gap:18px;font-size:12px;font-weight:600;color:#cbb8a4;margin-bottom:14px;flex-wrap:wrap"></div>
 
           <div style="display:flex;gap:10px">
             <div style="flex:none;display:flex;align-items:center">
@@ -221,6 +222,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
                         <stop offset="0" stop-color="#f5a860" stop-opacity="0.8"></stop>
                         <stop offset="1" stop-color="#f5a860" stop-opacity="0.08"></stop>
                       </linearGradient>
+                      <linearGradient id="offsetGradB" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#f472b6" stop-opacity="0.45"></stop>
+                        <stop offset="1" stop-color="#f472b6" stop-opacity="0.04"></stop>
+                      </linearGradient>
                     </defs>
                     <g id="gridLines"></g>
                     <g id="baseGroup" opacity="1">
@@ -229,6 +234,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
                     </g>
                     <path id="offArea" d="" fill="url(#offsetGrad)"></path>
                     <path id="offPath" d="" fill="none" stroke="#f5a860" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+                    <path id="offAreaB" d="" fill="url(#offsetGradB)" style="display:none"></path>
+                    <path id="offPathB" d="" fill="none" stroke="#f472b6" stroke-width="2.5" vector-effect="non-scaling-stroke" style="display:none"></path>
                   </svg>
                   <div id="xTickLabels" style="position:relative;height:20px;margin-top:6px"></div>
                   <div data-bind="t.yearsAxis" style="text-align:center;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-top:4px"></div>
@@ -251,6 +258,8 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
   var state = {
     propertyPrice: 900000,
+    compareOn: false,
+    propertyPriceB: 1100000,
     depositPct: 20,
     cash: 250000,
     loanType: 'Owner Occupier',
@@ -272,6 +281,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
   function num(v) { var x = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(x) ? 0 : x; }
   function money(n) { return '$' + Math.round(Math.max(0, n)).toLocaleString('en-US'); }
+  function diffMoney(d) { if (Math.abs(d) < 0.5) return '—'; return (d > 0 ? '+' : '−') + '$' + Math.round(Math.abs(d)).toLocaleString('en-US'); }
 
   function yearsMonths(months, zh) {
     var y = Math.floor(months / 12), m = Math.round(months % 12);
@@ -298,6 +308,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       existingCash: 'Existing cash', existingCash2: 'Existing cash',
       minusDeposit: '− Deposit', minusStamp: '− Stamp duty (VIC)', minusTransfer: '− Transfer & reg. fees (est.)',
       cashShortWarn: 'Your cash doesn\'t cover the deposit and upfront costs — offset starts at $0.',
+      compareAdd: '⊕ Compare another property price', priceB: 'Estimated property price B',
+      cmpDeposit: 'Deposit', cmpStamp: 'Stamp duty (VIC)', cmpFees: 'Transfer & reg. fees (est.)',
+      cmpLoan: 'Loan balance', cmpPay: 'Monthly repayment', cmpSurplus: 'Into offset each month',
+      cmpInit: 'Initial offset balance', cmpInterest: 'Total interest (with offset)',
+      cmpSaved: 'Interest saved vs no offset', cmpPayoff: 'Paid off in', cmpDiff: 'Δ (B − A)',
+      cmpOffsetAt: function (y) { return 'Offset balance after ' + y + ' years'; },
       ownerOcc: 'Owner Occupier', investor: 'Investor',
       yearsRemaining: 'Years remaining', yearsUnit: 'years',
       interestRate: 'Interest rate',
@@ -327,6 +343,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       existingCash: '现有现金', existingCash2: '现有现金',
       minusDeposit: '− 首付', minusStamp: '− 印花税（VIC）', minusTransfer: '− 过户及登记费（估）',
       cashShortWarn: '现金不足以支付首付和购房前期成本 — 对冲账户初始余额为 $0。',
+      compareAdd: '⊕ 对比另一个房价', priceB: '预估房价 B',
+      cmpDeposit: '首付', cmpStamp: '印花税（VIC）', cmpFees: '过户及登记费（估）',
+      cmpLoan: '贷款余额', cmpPay: '每月还款', cmpSurplus: '每月存入对冲',
+      cmpInit: '初始对冲余额', cmpInterest: '总利息（有对冲）',
+      cmpSaved: '可省利息（对比无对冲）', cmpPayoff: '还清时间', cmpDiff: '差额（B − A）',
+      cmpOffsetAt: function (y) { return y + ' 年后对冲余额'; },
       ownerOcc: '自住', investor: '投资',
       yearsRemaining: '剩余年限', yearsUnit: '年',
       interestRate: '利率',
@@ -410,38 +432,49 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
   function computeVals() {
     var s = state;
-    var price = Math.max(0, s.propertyPrice);
     var depPct = Math.min(100, Math.max(0, s.depositPct));
-    var depositAmt = price * depPct / 100;
-    var P = Math.max(0, price - depositAmt);
-    var stampDuty = vicStampDuty(price);
-    var transferFees = vicTransferFees(price);
-    var upfront = depositAmt + stampDuty + transferFees;
-    var initOffset = Math.max(0, s.cash - upfront);
-    var cashShort = s.cash < upfront;
     var n = Math.max(1, s.years * 12);
     var r = Math.max(0, s.rate) / 100 / 12;
-    var pay = r > 0 ? P * r / (1 - Math.pow(1 + r, -n)) : P / n;
     var totalExpenses = s.expenses.reduce(function (a, e) { return a + Math.max(0, e.amount); }, 0);
-    var rawSurplus = s.income - totalExpenses - pay;
-    var deposit = Math.max(0, rawSurplus);
     var lump = s.lumpOn ? Math.max(0, s.lump) : 0;
-
     var horizonM = Math.max(1, Math.round(s.horizonYears || 5)) * 12;
-    var base = simulate(false, P, r, n, pay, 0, 0, 0, 0, horizonM);
-    var off = simulate(true, P, r, n, pay, deposit, initOffset, lump, s.startMonths, horizonM);
 
-    var saved = Math.max(0, base.interest - off.interest);
-    var reduce = Math.max(0, base.months - off.months);
+    function scen(priceRaw) {
+      var price = Math.max(0, priceRaw);
+      var depositAmt = price * depPct / 100;
+      var P = Math.max(0, price - depositAmt);
+      var stampDuty = vicStampDuty(price);
+      var transferFees = vicTransferFees(price);
+      var upfront = depositAmt + stampDuty + transferFees;
+      var initOffset = Math.max(0, s.cash - upfront);
+      var cashShort = s.cash < upfront;
+      var pay = r > 0 ? P * r / (1 - Math.pow(1 + r, -n)) : P / n;
+      var rawSurplus = s.income - totalExpenses - pay;
+      var deposit = Math.max(0, rawSurplus);
+      var base = simulate(false, P, r, n, pay, 0, 0, 0, 0, horizonM);
+      var off = simulate(true, P, r, n, pay, deposit, initOffset, lump, s.startMonths, horizonM);
+      return {
+        price: price, depositAmt: depositAmt, P: P, stampDuty: stampDuty, transferFees: transferFees,
+        initOffset: initOffset, cashShort: cashShort, pay: pay, rawSurplus: rawSurplus, deposit: deposit,
+        base: base, off: off,
+        saved: Math.max(0, base.interest - off.interest),
+        reduce: Math.max(0, base.months - off.months)
+      };
+    }
 
-    var basePaths = pathFrom(base.pts, n, P);
-    var offPaths = pathFrom(off.pts, n, P);
+    var A = scen(s.propertyPrice);
+    var B = s.compareOn ? scen(s.propertyPriceB) : null;
+    var scaleP = B ? Math.max(A.P, B.P) : A.P;
+
+    var basePaths = pathFrom(A.base.pts, n, scaleP);
+    var offPaths = pathFrom(A.off.pts, n, scaleP);
+    var offPathsB = B ? pathFrom(B.off.pts, n, scaleP) : null;
 
     var yTicks = [1, 0.75, 0.5, 0.25, 0].map(function (f) {
       return {
         pct: (1 - f) * 100,
         vy: (1 - f) * 320,
-        label: P >= 1e6 ? (P * f / 1e6).toFixed(f === 0 ? 0 : 2) + 'M' : Math.round(P * f / 1000) + 'K'
+        label: scaleP >= 1e6 ? (scaleP * f / 1e6).toFixed(f === 0 ? 0 : 2) + 'M' : Math.round(scaleP * f / 1000) + 'K'
       };
     });
     var step = s.years > 20 ? 5 : s.years > 8 ? 2 : 1;
@@ -452,21 +485,21 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     var zh = s.lang === 'zh';
 
     var binds = {
-      loanBalanceText: money(P),
-      depositText: money(depositAmt),
+      loanBalanceText: money(A.P),
+      depositText: money(A.depositAmt),
       cashText: money(s.cash),
-      stampDutyText: money(stampDuty),
-      transferFeesText: money(transferFees),
-      initialOffsetText: money(initOffset),
-      payText: money(pay) + L.perMo,
+      stampDutyText: money(A.stampDuty),
+      transferFeesText: money(A.transferFees),
+      initialOffsetText: money(A.initOffset),
+      payText: money(A.pay) + L.perMo,
       incomeText: money(s.income),
       expensesText: money(totalExpenses),
-      surplusText: money(deposit) + L.perMo,
-      offsetAt5Text: money(off.offsetAt5),
-      savedText: money(saved),
-      interestCompareText: L.interestCompare(money(off.interest), money(base.interest)),
-      termReduceText: yearsMonths(reduce, zh),
-      payoffCompareText: L.payoffCompare(yearsMonths(off.months, zh), yearsMonths(base.months, zh))
+      surplusText: money(A.deposit) + L.perMo,
+      offsetAt5Text: money(A.off.offsetAt5),
+      savedText: money(A.saved),
+      interestCompareText: L.interestCompare(money(A.off.interest), money(A.base.interest)),
+      termReduceText: yearsMonths(A.reduce, zh),
+      payoffCompareText: L.payoffCompare(yearsMonths(A.off.months, zh), yearsMonths(A.base.months, zh))
     };
     [10, 15, 20, 25, 30, 35, 40].forEach(function (yv) {
       binds['yearsOpt' + yv] = yv + ' ' + L.yearsUnit;
@@ -474,12 +507,50 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
     return {
       L: L, zh: zh, binds: binds,
-      isDeficit: rawSurplus < 0,
-      cashShort: cashShort,
+      isDeficit: A.rawSurplus < 0,
+      cashShort: A.cashShort,
+      A: A, B: B, compare: !!B,
       basePath: basePaths.line, baseArea: basePaths.area,
       offPath: offPaths.line, offArea: offPaths.area,
+      offPathB: offPathsB ? offPathsB.line : '', offAreaB: offPathsB ? offPathsB.area : '',
       yTicks: yTicks, xTicks: xTicks
     };
+  }
+
+  function diffMonthsFmt(d, zh) {
+    if (!d) return '—';
+    return (d > 0 ? '+' : '−') + yearsMonths(Math.abs(d), zh);
+  }
+
+  function buildCompareTable(v) {
+    var A = v.A, B = v.B, zh = v.zh, L = v.L;
+    function td(text, color) {
+      return '<td style="padding:9px 0 9px 16px;border-bottom:1px solid #362a1f;text-align:right;font-family:\'Space Grotesk\',sans-serif;font-weight:600;white-space:nowrap;color:' + color + '">' + escapeHtml(text) + '</td>';
+    }
+    function row(label, a, b, d, redA, redB) {
+      return '<tr><td style="padding:9px 16px 9px 0;border-bottom:1px solid #362a1f;color:#cbb8a4">' + escapeHtml(label) + '</td>' +
+        td(a, redA ? '#f87171' : '#ffffff') + td(b, redB ? '#f87171' : '#ffffff') + td(d, '#a08d78') + '</tr>';
+    }
+    var thBase = 'padding:0 0 10px 16px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-align:right;white-space:nowrap;';
+    var head = '<tr>' +
+      '<th style="text-align:left;padding:0 16px 10px 0"></th>' +
+      '<th style="' + thBase + 'color:#f5a860">A · ' + money(A.price) + '</th>' +
+      '<th style="' + thBase + 'color:#f472b6">B · ' + money(B.price) + '</th>' +
+      '<th style="' + thBase + 'color:#a08d78">' + escapeHtml(L.cmpDiff) + '</th></tr>';
+    var rows = '';
+    rows += row(L.cmpDeposit, money(A.depositAmt), money(B.depositAmt), diffMoney(B.depositAmt - A.depositAmt));
+    rows += row(L.cmpStamp, money(A.stampDuty), money(B.stampDuty), diffMoney(B.stampDuty - A.stampDuty));
+    rows += row(L.cmpFees, money(A.transferFees), money(B.transferFees), diffMoney(B.transferFees - A.transferFees));
+    rows += row(L.cmpLoan, money(A.P), money(B.P), diffMoney(B.P - A.P));
+    rows += row(L.cmpPay, money(A.pay) + L.perMo, money(B.pay) + L.perMo, diffMoney(B.pay - A.pay));
+    rows += row(L.cmpSurplus, money(A.deposit) + L.perMo, money(B.deposit) + L.perMo, diffMoney(B.deposit - A.deposit), A.rawSurplus < 0, B.rawSurplus < 0);
+    rows += row(L.cmpInit, money(A.initOffset), money(B.initOffset), diffMoney(B.initOffset - A.initOffset), A.cashShort, B.cashShort);
+    rows += row(L.cmpOffsetAt(state.horizonYears), money(A.off.offsetAt5), money(B.off.offsetAt5), diffMoney(B.off.offsetAt5 - A.off.offsetAt5));
+    rows += row(L.cmpInterest, money(A.off.interest), money(B.off.interest), diffMoney(B.off.interest - A.off.interest));
+    rows += row(L.cmpSaved, money(A.saved), money(B.saved), diffMoney(B.saved - A.saved));
+    rows += row(L.cmpPayoff, yearsMonths(A.off.months, zh), yearsMonths(B.off.months, zh), diffMonthsFmt(B.off.months - A.off.months, zh));
+    return '<div style="overflow-x:auto;margin-bottom:26px"><table style="width:100%;border-collapse:collapse;font-size:13px">' +
+      '<thead>' + head + '</thead><tbody>' + rows + '</tbody></table></div>';
   }
 
   function update() {
@@ -556,13 +627,51 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         '<button data-action="toggleLump" class="btn-add-lump" style="border:none;background:transparent;color:#f5a860;font-family:\'Manrope\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;padding:0">' + escapeHtml(L.addLump) + '</button>';
     }
 
+    // Compare price B section
+    if (state.compareOn) {
+      el('compareSection').innerHTML =
+        '<div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+            '<label style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#f472b6">' + escapeHtml(L.priceB) + '</label>' +
+            '<button data-action="toggleCompare" class="btn-remove-lump" style="border:none;background:transparent;color:#6f6151;font-size:12px;font-weight:700;cursor:pointer;padding:0">' + escapeHtml(L.remove) + '</button>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px">' +
+            '<span style="padding:0 0 0 14px;color:#a08d78;font-weight:600">$</span>' +
+            '<input type="number" data-model="propertyPriceB" value="' + state.propertyPriceB + '" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:\'Space Grotesk\',sans-serif;font-size:16px;font-weight:600;padding:12px 14px 12px 8px">' +
+          '</div>' +
+        '</div>';
+    } else {
+      el('compareSection').innerHTML =
+        '<button data-action="toggleCompare" class="btn-add-lump" style="border:none;background:transparent;color:#f5a860;font-family:\'Manrope\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;padding:0">' + escapeHtml(L.compareAdd) + '</button>';
+    }
+
+    // Stats row vs comparison table
+    el('statsRow').style.display = v.compare ? 'none' : 'flex';
+    el('compareTable').innerHTML = v.compare ? buildCompareTable(v) : '';
+
+    // Legend
+    function legendItem(color, label) {
+      return '<span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:3px;background:' + color + '"></span>' + escapeHtml(label) + '</span>';
+    }
+    var legend = '';
+    if (v.compare) {
+      legend = legendItem(props.accent, 'A · ' + money(v.A.price)) + legendItem('#f472b6', 'B · ' + money(v.B.price));
+    } else {
+      if (props.showBaseline) legend += legendItem('#6b5d4c', L.withoutOffset);
+      legend += legendItem(props.accent, L.withOffset);
+    }
+    el('legendRow').innerHTML = legend;
+
     // Chart
     el('basePath').setAttribute('d', v.basePath);
     el('baseArea').setAttribute('d', v.baseArea);
     el('offPath').setAttribute('d', v.offPath);
     el('offArea').setAttribute('d', v.offArea);
-    el('baseGroup').setAttribute('opacity', props.showBaseline ? '1' : '0');
-    el('legendBaseline').style.display = props.showBaseline ? 'flex' : 'none';
+    el('baseGroup').setAttribute('opacity', v.compare ? '0' : (props.showBaseline ? '1' : '0'));
+    el('offPathB').setAttribute('d', v.offPathB);
+    el('offAreaB').setAttribute('d', v.offAreaB);
+    el('offPathB').style.display = v.compare ? '' : 'none';
+    el('offAreaB').style.display = v.compare ? '' : 'none';
 
     el('gridLines').innerHTML = v.yTicks.map(function (t) {
       return '<line x1="0" x2="860" y1="' + t.vy + '" y2="' + t.vy + '" stroke="#362a1f" stroke-width="1" vector-effect="non-scaling-stroke"></line>';
@@ -581,6 +690,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
   var modelHandlers = {
     propertyPrice: function (v) { state.propertyPrice = num(v); },
+    propertyPriceB: function (v) { state.propertyPriceB = num(v); },
     depositPct: function (v) { state.depositPct = Math.min(100, Math.max(0, num(v))); },
     cash: function (v) { state.cash = num(v); },
     rate: function (v) { state.rate = num(v); },
@@ -638,6 +748,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       return;
     }
     if (action === 'toggleLump') { state.lumpOn = !state.lumpOn; update(); return; }
+    if (action === 'toggleCompare') { state.compareOn = !state.compareOn; update(); return; }
     var removeId = t.getAttribute('data-remove-id');
     if (removeId) {
       var id = parseInt(removeId, 10);

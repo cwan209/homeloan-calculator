@@ -12,6 +12,7 @@ A single-file, dependency-free home loan offset account calculator. Enter your l
 - Month-by-month offset simulation: monthly surplus deposits, initial balance, optional lump sum, delayed start
 - Interest saved and loan term reduction vs. a no-offset baseline
 - Loan balance chart comparing both scenarios
+- Compare mode: side-by-side comparison of two property prices (costs, repayments, offset trajectory and payoff time) with everything else held constant
 - English / 中文 language toggle
 
 ## Usage
