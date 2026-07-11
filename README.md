@@ -6,7 +6,8 @@ A single-file, dependency-free home loan offset account calculator. Enter your l
 
 ## Features
 
-- Estimated property price + deposit % + existing cash inputs — loan balance and initial offset balance are derived automatically (loan = price − deposit, initial offset = cash − deposit)
+- Estimated property price + deposit % + existing cash inputs — loan balance and initial offset balance are derived automatically (loan = price − deposit, initial offset = cash − deposit − stamp duty − transfer/registration fees)
+- VIC stamp duty auto-calculated from the property price (general rates, no concessions); transfer and mortgage registration fees estimated
 - Principal & interest repayment calculation with adjustable rate and term
 - Month-by-month offset simulation: monthly surplus deposits, initial balance, optional lump sum, delayed start
 - Interest saved and loan term reduction vs. a no-offset baseline

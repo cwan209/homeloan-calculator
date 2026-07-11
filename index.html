@@ -156,10 +156,14 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
               </div>
             </div>
 
-            <div style="background:#2a2119;border-radius:12px;padding:14px 16px">
-              <div data-bind="t.initialOffsetL" style="font-size:12px;color:#a08d78;font-weight:600;margin-bottom:2px"></div>
+            <div style="background:#2a2119;border-radius:12px;padding:16px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#cbb8a4;margin-bottom:6px"><span data-bind="t.existingCash2"></span><span data-bind="cashText" style="font-family:'Space Grotesk',sans-serif;font-weight:600"></span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#cbb8a4;margin-bottom:6px"><span data-bind="t.minusDeposit"></span><span data-bind="depositText" style="font-family:'Space Grotesk',sans-serif;font-weight:600"></span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#cbb8a4;margin-bottom:6px"><span data-bind="t.minusStamp"></span><span data-bind="stampDutyText" style="font-family:'Space Grotesk',sans-serif;font-weight:600"></span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:#cbb8a4"><span data-bind="t.minusTransfer"></span><span data-bind="transferFeesText" style="font-family:'Space Grotesk',sans-serif;font-weight:600"></span></div>
+              <div style="height:1px;background:#46372a;margin:12px 0"></div>
+              <div data-bind="t.initialOffsetL" style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:2px"></div>
               <div data-bind="initialOffsetText" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#ffffff"></div>
-              <div data-bind="t.offsetHint" style="font-size:11px;color:#6f6151;margin-top:4px"></div>
               <div id="cashWarn"></div>
             </div>
 
@@ -248,7 +252,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
   var state = {
     propertyPrice: 900000,
     depositPct: 20,
-    cash: 200000,
+    cash: 250000,
     loanType: 'Owner Occupier',
     years: 30,
     rate: 6.04,
@@ -291,9 +295,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       subtitle: 'Enter your loan, income and living costs — see how much interest your monthly surplus could save in an offset account.',
       loanDetails: 'Loan details', loanBalance: 'Loan balance', loanType: 'Loan type',
       propertyPrice: 'Estimated property price', depositLbl: 'Deposit',
-      existingCash: 'Existing cash',
-      offsetHint: '= existing cash − deposit',
-      cashShortWarn: 'Your cash doesn\'t cover the deposit — offset starts at $0.',
+      existingCash: 'Existing cash', existingCash2: 'Existing cash',
+      minusDeposit: '− Deposit', minusStamp: '− Stamp duty (VIC)', minusTransfer: '− Transfer & reg. fees (est.)',
+      cashShortWarn: 'Your cash doesn\'t cover the deposit and upfront costs — offset starts at $0.',
       ownerOcc: 'Owner Occupier', investor: 'Investor',
       yearsRemaining: 'Years remaining', yearsUnit: 'years',
       interestRate: 'Interest rate',
@@ -310,7 +314,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       interestSave: 'Total interest you could save', termReduce: 'Your loan term could reduce by',
       withoutOffset: 'Without offset', withOffset: 'With offset (surplus deposited monthly)',
       loanAmountAxis: 'Loan amount ($)', yearsAxis: 'Years',
-      footnote: 'Assumes principal & interest repayments at a constant rate, monthly surplus deposited into the offset from the start date, and interest charged only on the loan balance not covered by your offset (interest stops once the offset fully covers the loan). Estimates only — not financial advice.',
+      footnote: 'Assumes principal & interest repayments at a constant rate, monthly surplus deposited into the offset from the start date, and interest charged only on the loan balance not covered by your offset (interest stops once the offset fully covers the loan). Stamp duty uses VIC general rates with no first-home-buyer or other concessions; transfer and mortgage registration fees are approximations. Estimates only — not financial advice.',
       perMo: ' /mo',
       interestCompare: function (a, b) { return a + ' interest instead of ' + b; },
       payoffCompare: function (a, b) { return 'Paid off in ' + a + ' instead of ' + b; }
@@ -320,9 +324,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       subtitle: '输入贷款、收入和生活开销，看看每月结余存入对冲账户能省下多少利息。',
       loanDetails: '贷款信息', loanBalance: '贷款余额', loanType: '贷款类型',
       propertyPrice: '预估房价', depositLbl: '首付',
-      existingCash: '现有现金',
-      offsetHint: '= 现有现金 − 首付',
-      cashShortWarn: '现金不足以支付首付 — 对冲账户初始余额为 $0。',
+      existingCash: '现有现金', existingCash2: '现有现金',
+      minusDeposit: '− 首付', minusStamp: '− 印花税（VIC）', minusTransfer: '− 过户及登记费（估）',
+      cashShortWarn: '现金不足以支付首付和购房前期成本 — 对冲账户初始余额为 $0。',
       ownerOcc: '自住', investor: '投资',
       yearsRemaining: '剩余年限', yearsUnit: '年',
       interestRate: '利率',
@@ -339,7 +343,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       interestSave: '可节省的总利息', termReduce: '贷款年限可缩短',
       withoutOffset: '无对冲账户', withOffset: '有对冲账户（每月存入结余）',
       loanAmountAxis: '贷款余额（$）', yearsAxis: '年',
-      footnote: '假设按固定利率本息还款，月结余自开始日期起每月存入对冲账户；利息仅按未被对冲覆盖的贷款余额计算（对冲全额覆盖后不再产生利息）。结果仅为估算，不构成理财建议。',
+      footnote: '假设按固定利率本息还款，月结余自开始日期起每月存入对冲账户；利息仅按未被对冲覆盖的贷款余额计算（对冲全额覆盖后不再产生利息）。印花税按维州（VIC）一般费率估算，不含首次置业等减免；过户及贷款登记费为近似值。结果仅为估算，不构成理财建议。',
       perMo: ' /月',
       interestCompare: function (a, b) { return '利息 ' + a + '（原本 ' + b + '）'; },
       payoffCompare: function (a, b) { return a + ' 还清（原需 ' + b + '）'; }
@@ -364,6 +368,22 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     }
     if (months < horizonM) offsetAt5 = offset;
     return { interest: interest, months: months, pts: pts, offsetAt5: offsetAt5 };
+  }
+
+  // VIC general (non-concession) transfer duty, contracts from 1 July 2021
+  function vicStampDuty(v) {
+    if (v <= 0) return 0;
+    if (v <= 25000) return v * 0.014;
+    if (v <= 130000) return 350 + (v - 25000) * 0.024;
+    if (v <= 960000) return 2870 + (v - 130000) * 0.06;
+    if (v <= 2000000) return v * 0.055;
+    return 110000 + (v - 2000000) * 0.065;
+  }
+
+  // VIC land transfer registration fee (electronic) + mortgage registration, approximate
+  function vicTransferFees(v) {
+    if (v <= 0) return 0;
+    return Math.min(3609, 110.80 + 2.34 * Math.floor(v / 1000)) + 128.50;
   }
 
   function pathFrom(pts, n, P) {
@@ -394,8 +414,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     var depPct = Math.min(100, Math.max(0, s.depositPct));
     var depositAmt = price * depPct / 100;
     var P = Math.max(0, price - depositAmt);
-    var initOffset = Math.max(0, s.cash - depositAmt);
-    var cashShort = s.cash < depositAmt;
+    var stampDuty = vicStampDuty(price);
+    var transferFees = vicTransferFees(price);
+    var upfront = depositAmt + stampDuty + transferFees;
+    var initOffset = Math.max(0, s.cash - upfront);
+    var cashShort = s.cash < upfront;
     var n = Math.max(1, s.years * 12);
     var r = Math.max(0, s.rate) / 100 / 12;
     var pay = r > 0 ? P * r / (1 - Math.pow(1 + r, -n)) : P / n;
@@ -431,6 +454,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     var binds = {
       loanBalanceText: money(P),
       depositText: money(depositAmt),
+      cashText: money(s.cash),
+      stampDutyText: money(stampDuty),
+      transferFeesText: money(transferFees),
       initialOffsetText: money(initOffset),
       payText: money(pay) + L.perMo,
       incomeText: money(s.income),
