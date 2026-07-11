@@ -48,10 +48,22 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         <div data-bind="t.loanDetails" style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;color:#ffffff"></div>
 
         <div>
-          <label data-bind="t.loanBalance" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
+          <label data-bind="t.propertyPrice" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
           <div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px">
             <span style="padding:0 0 0 14px;color:#a08d78;font-weight:600">$</span>
-            <input type="number" data-model="loanBalance" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;padding:12px 14px 12px 8px">
+            <input type="number" data-model="propertyPrice" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;padding:12px 14px 12px 8px">
+          </div>
+          <input type="range" id="priceRange" min="100000" max="3000000" step="10000" data-model="propertyPrice" style="width:100%;margin-top:14px;accent-color:#f5a860;cursor:pointer">
+        </div>
+
+        <div>
+          <label data-bind="t.depositLbl" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px;width:96px">
+              <input type="number" step="1" min="0" max="100" data-model="depositPct" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;padding:12px 4px 12px 14px">
+              <span style="padding:0 12px 0 0;color:#a08d78;font-size:13px;font-weight:600">%</span>
+            </div>
+            <div data-bind="depositText" style="font-size:13px;color:#a08d78;font-weight:600;font-family:'Space Grotesk',sans-serif"></div>
           </div>
         </div>
 
@@ -88,6 +100,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
         </div>
 
         <div style="background:#2a2119;border-radius:12px;padding:14px 16px">
+          <div data-bind="t.loanBalance" style="font-size:12px;color:#a08d78;font-weight:600;margin-bottom:2px"></div>
+          <div data-bind="loanBalanceText" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#ffffff"></div>
+          <div style="height:1px;background:#46372a;margin:12px 0"></div>
           <div data-bind="t.monthlyRepayment" style="font-size:12px;color:#a08d78;font-weight:600;margin-bottom:2px"></div>
           <div data-bind="payText" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#ffffff"></div>
         </div>
@@ -134,11 +149,18 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
             <div data-bind="t.offsetAccount" style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;color:#ffffff"></div>
 
             <div>
-              <label data-bind="t.initialOffsetL" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
+              <label data-bind="t.existingCash" style="display:block;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a08d78;margin-bottom:8px"></label>
               <div style="display:flex;align-items:center;background:#2a2119;border:1px solid #46372a;border-radius:10px">
                 <span style="padding:0 0 0 14px;color:#a08d78;font-weight:600">$</span>
-                <input type="number" data-model="initialOffset" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;padding:12px 14px 12px 8px">
+                <input type="number" data-model="cash" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:#ffffff;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;padding:12px 14px 12px 8px">
               </div>
+            </div>
+
+            <div style="background:#2a2119;border-radius:12px;padding:14px 16px">
+              <div data-bind="t.initialOffsetL" style="font-size:12px;color:#a08d78;font-weight:600;margin-bottom:2px"></div>
+              <div data-bind="initialOffsetText" style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#ffffff"></div>
+              <div data-bind="t.offsetHint" style="font-size:11px;color:#6f6151;margin-top:4px"></div>
+              <div id="cashWarn"></div>
             </div>
 
             <div>
@@ -224,7 +246,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
   var props = { accent: '#f5a860', showBaseline: true };
 
   var state = {
-    loanBalance: 671397,
+    propertyPrice: 900000,
+    depositPct: 20,
+    cash: 200000,
     loanType: 'Owner Occupier',
     years: 30,
     rate: 6.04,
@@ -235,7 +259,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       { id: 3, name: 'Transport', amount: 400 }
     ],
     nextId: 4,
-    initialOffset: 20000,
     startMonths: 0,
     lumpOn: false,
     horizonYears: 5,
@@ -267,6 +290,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       title: 'Home loan offset calculator',
       subtitle: 'Enter your loan, income and living costs — see how much interest your monthly surplus could save in an offset account.',
       loanDetails: 'Loan details', loanBalance: 'Loan balance', loanType: 'Loan type',
+      propertyPrice: 'Estimated property price', depositLbl: 'Deposit',
+      existingCash: 'Existing cash',
+      offsetHint: '= existing cash − deposit',
+      cashShortWarn: 'Your cash doesn\'t cover the deposit — offset starts at $0.',
       ownerOcc: 'Owner Occupier', investor: 'Investor',
       yearsRemaining: 'Years remaining', yearsUnit: 'years',
       interestRate: 'Interest rate',
@@ -292,6 +319,10 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       title: '房贷对冲账户（Offset）计算器',
       subtitle: '输入贷款、收入和生活开销，看看每月结余存入对冲账户能省下多少利息。',
       loanDetails: '贷款信息', loanBalance: '贷款余额', loanType: '贷款类型',
+      propertyPrice: '预估房价', depositLbl: '首付',
+      existingCash: '现有现金',
+      offsetHint: '= 现有现金 − 首付',
+      cashShortWarn: '现金不足以支付首付 — 对冲账户初始余额为 $0。',
       ownerOcc: '自住', investor: '投资',
       yearsRemaining: '剩余年限', yearsUnit: '年',
       interestRate: '利率',
@@ -359,7 +390,12 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 
   function computeVals() {
     var s = state;
-    var P = Math.max(0, s.loanBalance);
+    var price = Math.max(0, s.propertyPrice);
+    var depPct = Math.min(100, Math.max(0, s.depositPct));
+    var depositAmt = price * depPct / 100;
+    var P = Math.max(0, price - depositAmt);
+    var initOffset = Math.max(0, s.cash - depositAmt);
+    var cashShort = s.cash < depositAmt;
     var n = Math.max(1, s.years * 12);
     var r = Math.max(0, s.rate) / 100 / 12;
     var pay = r > 0 ? P * r / (1 - Math.pow(1 + r, -n)) : P / n;
@@ -367,7 +403,6 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     var rawSurplus = s.income - totalExpenses - pay;
     var deposit = Math.max(0, rawSurplus);
     var lump = s.lumpOn ? Math.max(0, s.lump) : 0;
-    var initOffset = Math.max(0, s.initialOffset);
 
     var horizonM = Math.max(1, Math.round(s.horizonYears || 5)) * 12;
     var base = simulate(false, P, r, n, pay, 0, 0, 0, 0, horizonM);
@@ -394,6 +429,9 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     var zh = s.lang === 'zh';
 
     var binds = {
+      loanBalanceText: money(P),
+      depositText: money(depositAmt),
+      initialOffsetText: money(initOffset),
       payText: money(pay) + L.perMo,
       incomeText: money(s.income),
       expensesText: money(totalExpenses),
@@ -411,6 +449,7 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     return {
       L: L, zh: zh, binds: binds,
       isDeficit: rawSurplus < 0,
+      cashShort: cashShort,
       basePath: basePaths.line, baseArea: basePaths.area,
       offPath: offPaths.line, offArea: offPaths.area,
       yTicks: yTicks, xTicks: xTicks
@@ -468,6 +507,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
       ? '<div style="margin-top:8px;font-size:12px;font-weight:600;color:#f87171">' + escapeHtml(L.deficitWarn) + '</div>'
       : '';
 
+    // Cash-short warning
+    el('cashWarn').innerHTML = v.cashShort
+      ? '<div style="margin-top:8px;font-size:12px;font-weight:600;color:#f87171">' + escapeHtml(L.cashShortWarn) + '</div>'
+      : '';
+
     // Lump sum section
     if (state.lumpOn) {
       el('lumpSection').innerHTML =
@@ -510,10 +554,11 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
   }
 
   var modelHandlers = {
-    loanBalance: function (v) { state.loanBalance = num(v); },
+    propertyPrice: function (v) { state.propertyPrice = num(v); },
+    depositPct: function (v) { state.depositPct = Math.min(100, Math.max(0, num(v))); },
+    cash: function (v) { state.cash = num(v); },
     rate: function (v) { state.rate = num(v); },
     income: function (v) { state.income = num(v); },
-    initialOffset: function (v) { state.initialOffset = num(v); },
     lump: function (v) { state.lump = num(v); },
     loanType: function (v) { state.loanType = v; },
     years: function (v) { state.years = parseInt(v, 10); },
@@ -544,9 +589,13 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield;}
     }
   });
 
-  // Live updates while dragging the rate slider
+  // Live updates while dragging the sliders
   el('rateRange').addEventListener('input', function (e) {
     state.rate = num(e.target.value);
+    update();
+  });
+  el('priceRange').addEventListener('input', function (e) {
+    state.propertyPrice = num(e.target.value);
     update();
   });
 
